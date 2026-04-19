@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { useInView } from "framer-motion";
 
 export function Counter({
   to,
@@ -15,22 +14,37 @@ export function Counter({
   decimals?: number;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-40px" });
   const [val, setVal] = useState(0);
 
   useEffect(() => {
-    if (!inView) return;
-    const start = performance.now();
+    const el = ref.current;
+    if (!el) return;
+
     let raf = 0;
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / duration);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setVal(to * eased);
-      if (t < 1) raf = requestAnimationFrame(tick);
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+
+        const start = performance.now();
+        const tick = (now: number) => {
+          const t = Math.min(1, (now - start) / duration);
+          const eased = 1 - Math.pow(1 - t, 3);
+          setVal(to * eased);
+          if (t < 1) raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+      },
+      { rootMargin: "-40px" },
+    );
+
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(raf);
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [inView, to, duration]);
+  }, [to, duration]);
 
   return (
     <span ref={ref}>

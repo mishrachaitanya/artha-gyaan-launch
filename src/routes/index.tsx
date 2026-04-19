@@ -117,6 +117,8 @@ function Hero() {
               alt="Indian mother and teenage daughter learning together at home"
               width={1280}
               height={1280}
+              fetchPriority="high"
+              decoding="async"
               className="rounded-[1.75rem] shadow-card"
             />
             <div className="absolute -bottom-5 -left-5 hidden rounded-2xl bg-white px-5 py-4 shadow-card md:block">
@@ -470,6 +472,7 @@ function Traction() {
                 width={1280}
                 height={800}
                 loading="lazy"
+                decoding="async"
                 className="h-full w-full object-cover"
               />
               <div className="p-8 md:p-12">
@@ -484,7 +487,7 @@ function Traction() {
                       </div>
                       <p className="mt-3 text-sm leading-relaxed text-navy">"{t.quote}"</p>
                       <div className="mt-4 flex items-center gap-3">
-                        <img src={t.img} alt={t.name} width={40} height={40} loading="lazy" className="h-10 w-10 rounded-full object-cover" />
+                        <img src={t.img} alt={t.name} width={40} height={40} loading="lazy" decoding="async" className="h-10 w-10 rounded-full object-cover" />
                         <div>
                           <p className="text-sm font-bold text-navy">{t.name}</p>
                           <p className="text-xs text-muted-foreground">{t.role}</p>
