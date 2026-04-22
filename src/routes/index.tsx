@@ -1115,8 +1115,8 @@ function Footer() {
   return (
     <footer className="border-t border-border bg-background">
       <div className="container-page py-14">
-        <div className="grid gap-10 md:grid-cols-2 md:items-center">
-          <div>
+        <div className="grid gap-10 md:grid-cols-3">
+          <div className="md:col-span-1">
             <a href="#top" className="flex items-center gap-2.5">
               <span
                 className="flex h-8 w-8 items-center justify-center rounded-lg bg-navy text-saffron font-black text-sm"
@@ -1128,8 +1128,7 @@ function Footer() {
                 className="text-lg font-bold text-navy"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Artha Gyaan{" "}
-                <span className="text-saffron">|</span> Namaste Stocks
+                ArthGyaan
               </span>
             </a>
             <p className="mt-3 max-w-sm font-sans text-sm text-muted-foreground">
@@ -1137,23 +1136,46 @@ function Footer() {
               real futures.
             </p>
           </div>
-          <nav className="flex flex-wrap gap-x-7 gap-y-3 font-sans text-sm font-semibold text-navy md:justify-end">
-            {[
-              ["About", "#top"],
-              ["Curriculum", "#curriculum"],
-              ["Testimonials", "#testimonials"],
-              ["FAQ", "#faq"],
-              ["Enroll", "#enroll"],
-            ].map(([label, href]) => (
-              <a key={label} href={href} className="transition-colors hover:text-saffron">
-                {label}
-              </a>
-            ))}
-          </nav>
+          
+          <div className="grid grid-cols-2 gap-8 md:col-span-2 md:justify-items-end">
+            <div>
+              <h3 className="font-bold text-navy mb-4 font-sans text-sm uppercase tracking-wider text-saffron" style={{ fontFamily: "var(--font-display)" }}>Navigation</h3>
+              <nav className="flex flex-col gap-y-3 font-sans text-sm font-semibold text-navy">
+                {[
+                  ["About", "#top"],
+                  ["Curriculum", "#curriculum"],
+                  ["Testimonials", "#testimonials"],
+                  ["FAQ", "#faq"],
+                  ["Enroll", "#enroll"],
+                ].map(([label, href]) => (
+                  <a key={label} href={href} className="transition-colors hover:text-saffron">
+                    {label}
+                  </a>
+                ))}
+              </nav>
+            </div>
+            
+            <div>
+              <h3 className="font-bold text-navy mb-4 font-sans text-sm uppercase tracking-wider text-saffron" style={{ fontFamily: "var(--font-display)" }}>Information</h3>
+              <nav className="flex flex-col gap-y-3 font-sans text-sm font-semibold text-navy">
+                {[
+                  ["Terms & Conditions", "/terms"],
+                  ["Privacy Policy", "/privacy"],
+                  ["Refund Policy", "/refunds"],
+                  ["Contact Us", "/contact"],
+                ].map(([label, href]) => (
+                  <a key={label} href={href} className="transition-colors hover:text-saffron">
+                    {label}
+                  </a>
+                ))}
+              </nav>
+            </div>
+          </div>
         </div>
+        
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 sm:flex-row">
           <p className="font-sans text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Namaste Stocks. All rights reserved.
+            © {new Date().getFullYear()} ArthGyaan. All rights reserved.
           </p>
           <p className="font-sans text-xs text-muted-foreground">
             Made with ❤️ for India's future

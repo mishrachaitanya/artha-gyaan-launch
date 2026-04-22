@@ -45,10 +45,7 @@ export function ArthaNav() {
               className="text-base font-bold tracking-tight text-navy group-hover:text-saffron transition-colors duration-200"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              Artha Gyaan
-            </span>
-            <span className="hidden text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:block">
-              by Namaste Stocks
+              ArthGyaan
             </span>
           </span>
         </a>
