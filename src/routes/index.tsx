@@ -29,6 +29,7 @@ import {
 import { ArthaNav } from "@/components/ArthaNav";
 import { Reveal } from "@/components/Reveal";
 import { Counter } from "@/components/Counter";
+import { EnrollmentModal } from "@/components/EnrollmentModal";
 import heroImg from "@/assets/hero-parent-student.jpg";
 import classroomImg from "@/assets/classroom.jpg";
 import parent1 from "@/assets/parent-1.jpg";
@@ -59,10 +60,11 @@ export type FormType = "curriculum" | "partner" | "sponsor";
 
 function ArthaLanding() {
   const [formType, setFormType] = useState<FormType | null>(null);
+  const [enrollModalOpen, setEnrollModalOpen] = useState(false);
   return (
     <div id="top" className="bg-background">
-      <ArthaNav />
-      <Hero onOpenForm={() => setFormType("curriculum")} />
+      <ArthaNav onEnroll={() => setEnrollModalOpen(true)} />
+      <Hero onOpenForm={() => setFormType("curriculum")} onEnroll={() => setEnrollModalOpen(true)} />
       <TrustBar />
       <Problem />
       <EmotionalHook />
@@ -72,9 +74,10 @@ function ArthaLanding() {
       <Credibility />
       <Traction />
       <FAQ />
-      <FinalCTA onOpenForm={setFormType} />
+      <FinalCTA onOpenForm={setFormType} onEnroll={() => setEnrollModalOpen(true)} />
       <Footer />
       {formType && <ContactFormModal type={formType} onClose={() => setFormType(null)} />}
+      <EnrollmentModal open={enrollModalOpen} onOpenChange={setEnrollModalOpen} />
     </div>
   );
 }
@@ -82,7 +85,7 @@ function ArthaLanding() {
 /* ═══════════════════════════════════════════
    1. HERO — Cinematic editorial layout
 ═══════════════════════════════════════════ */
-function Hero({ onOpenForm }: { onOpenForm: () => void }) {
+function Hero({ onOpenForm, onEnroll }: { onOpenForm: () => void; onEnroll: () => void }) {
   return (
     <section className="relative overflow-hidden bg-background">
       {/* Background texture */}
@@ -109,12 +112,12 @@ function Hero({ onOpenForm }: { onOpenForm: () => void }) {
         {/* Left copy */}
         <Reveal>
           <div className="pr-0 lg:pr-10">
-            <span
-              className="inline-flex items-center gap-2 rounded-full border border-saffron/30 bg-saffron-soft px-3 py-1 text-xs font-bold uppercase tracking-widest text-saffron"
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-saffron" />
-              By Namaste Stocks — Real Investors
-            </span>
+            <div className="mb-6 flex items-center gap-4">
+              <div className="h-[2px] w-8 bg-saffron" />
+              <p className="font-sans text-xs font-bold uppercase tracking-[0.25em] text-navy/70">
+                <span className="text-saffron">By Namaste Stocks</span> <span className="opacity-50 mx-1">•</span> Real Investors
+              </p>
+            </div>
 
             <h1
               className="mt-6 text-4xl font-bold leading-[1.07] text-navy md:text-5xl lg:text-[3.75rem] lg:leading-[1.05]"
@@ -156,15 +159,15 @@ function Hero({ onOpenForm }: { onOpenForm: () => void }) {
 
             {/* CTAs */}
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-              <a
-                href="#enroll"
-                className="group relative inline-flex items-center justify-center font-bold uppercase tracking-widest text-navy"
+              <button
+                onClick={onEnroll}
+                className="group relative inline-flex items-center justify-center font-bold uppercase tracking-widest text-navy cursor-pointer"
               >
                 <span className="absolute inset-0 border border-navy bg-navy transition-transform duration-300 group-hover:translate-x-1.5 group-hover:translate-y-1.5" />
                 <span className="relative border-2 border-navy bg-saffron px-8 py-4 transition-transform duration-300 group-hover:-translate-x-1 group-hover:-translate-y-1">
                   Enroll Now — ₹999
                 </span>
-              </a>
+              </button>
               <button
                 onClick={onOpenForm}
                 className="group relative inline-flex w-full items-center justify-center font-bold uppercase tracking-widest text-navy sm:w-auto"
@@ -362,11 +365,17 @@ function EmotionalHook() {
       <div className="container-page relative z-10">
         <Reveal>
           <div className="mx-auto max-w-4xl text-center">
-            {/* Eyebrow badge */}
-            <span className="inline-flex items-center gap-2 rounded-full border border-saffron/30 bg-saffron/10 px-4 py-1.5 font-sans text-xs font-bold uppercase tracking-widest text-saffron">
-              <Sparkles className="h-3.5 w-3.5" />
-              The compounding truth
-            </span>
+            {/* Bespoke Editorial Eyebrow */}
+            <div className="mb-2 flex flex-col items-center gap-3">
+              <div className="flex gap-[0.35rem]">
+                <div className="h-1.5 w-1.5 rounded-full bg-saffron opacity-30" />
+                <div className="h-1.5 w-1.5 rounded-full bg-saffron opacity-60" />
+                <div className="h-1.5 w-1.5 rounded-full bg-saffron opacity-100" />
+              </div>
+              <span className="font-sans text-xs font-bold uppercase tracking-[0.25em] text-saffron/90">
+                The Compounding Truth
+              </span>
+            </div>
             <h2
               className="mt-8 text-[2rem] font-bold leading-tight text-white md:text-5xl lg:text-[3.25rem] lg:leading-[1.1]"
               style={{ fontFamily: "var(--font-display)" }}
@@ -612,12 +621,17 @@ function WorkshopDetails() {
     <section className="bg-cream py-20 px-4">
       <div className="container-page max-w-5xl">
         <Reveal>
-          {/* Saffron ribbon badge */}
-          <div className="flex justify-center">
-            <span className="inline-flex items-center gap-2 rounded-full bg-navy px-5 py-2 font-sans text-xs font-bold uppercase tracking-widest text-saffron">
-              <Sparkles className="h-3.5 w-3.5" />
+          {/* Editorial Heading Accent */}
+          <div className="mb-1 flex items-center justify-center gap-5">
+            <div className="relative h-px w-16 bg-border">
+              <div className="absolute right-0 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rotate-45 bg-saffron" />
+            </div>
+            <span className="font-sans text-sm font-bold uppercase tracking-[0.25em] text-navy opacity-80">
               Workshop At a Glance
             </span>
+            <div className="relative h-px w-16 bg-border">
+              <div className="absolute left-0 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rotate-45 bg-saffron" />
+            </div>
           </div>
 
           <div className="mt-8 overflow-hidden rounded-3xl border border-border bg-white shadow-elevated">
@@ -987,7 +1001,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 /* ═══════════════════════════════════════════
    11. FINAL CTA — Full-bleed navy
 ═══════════════════════════════════════════ */
-function FinalCTA({ onOpenForm }: { onOpenForm: (t: FormType) => void }) {
+function FinalCTA({ onOpenForm, onEnroll }: { onOpenForm: (t: FormType) => void; onEnroll: () => void }) {
   const paths = [
     {
       type: "curriculum" as const,
@@ -1077,7 +1091,7 @@ function FinalCTA({ onOpenForm }: { onOpenForm: (t: FormType) => void }) {
                 <p className="mt-4 flex-grow font-sans text-sm leading-relaxed" style={{ color: "oklch(1 0 0 / 0.6)" }}>{p.desc}</p>
                 <div className="mt-8">
                   <button
-                    onClick={() => onOpenForm(p.type)}
+                    onClick={() => p.primary ? onEnroll() : onOpenForm(p.type)}
                     className="group/btn relative inline-flex items-center justify-center font-sans font-bold uppercase tracking-widest"
                   >
                     <span

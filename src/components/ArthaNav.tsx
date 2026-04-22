@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-export function ArthaNav() {
+export function ArthaNav({ onEnroll }: { onEnroll?: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   const [progress, setProgress] = useState(0);
   const progressRef = useRef<HTMLDivElement>(null);
@@ -69,13 +69,13 @@ export function ArthaNav() {
         </nav>
 
         {/* CTA */}
-        <a
-          href="#enroll"
-          className="inline-flex items-center justify-center rounded-full bg-saffron px-5 py-2.5 text-sm font-bold text-saffron-foreground shadow-amber transition-all duration-200 hover:scale-[1.04] hover:shadow-glow-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:px-6"
+        <button
+          onClick={onEnroll}
+          className="inline-flex items-center justify-center rounded-full bg-saffron px-5 py-2.5 text-sm font-bold text-saffron-foreground shadow-amber transition-all duration-200 hover:scale-[1.04] hover:shadow-glow-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:px-6 cursor-pointer"
           style={{ animation: "pulse-ring 2.5s ease-in-out infinite" }}
         >
           Enroll — ₹999
-        </a>
+        </button>
       </div>
     </header>
   );
