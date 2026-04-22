@@ -223,13 +223,13 @@ function Hero({ onOpenForm, onEnroll }: { onOpenForm: () => void; onEnroll: () =
             />
             {/* Floating badge */}
             <div
-              className="absolute -bottom-5 -left-5 z-20 flex items-center gap-2.5 border-2 border-saffron bg-white px-4 py-3 shadow-elevated"
+              className="absolute -bottom-2 -left-2 sm:-bottom-5 sm:-left-5 z-20 flex items-center gap-2.5 border-2 border-saffron bg-white px-3 sm:px-4 py-2 sm:py-3 shadow-elevated"
               style={{ animation: "float-up 3s ease-in-out infinite" }}
             >
-              <GraduationCap className="h-5 w-5 text-saffron" />
+              <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5 text-saffron" />
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-navy">Workshop</p>
-                <p className="text-[11px] text-muted-foreground">6 Hrs · ₹999 Only</p>
+                <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-navy">Workshop</p>
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground">6 Hrs · ₹999 Only</p>
               </div>
             </div>
           </div>
@@ -250,23 +250,25 @@ function TrustBar() {
     { value: "4.9 ★", label: "Parent Rating" },
   ];
   return (
-    <section className="border-y border-border bg-warm-grey">
+    <section className="bg-warm-grey pb-10">
       <div className="container-page">
-        <div className="grid divide-y divide-border sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
+        <div className="grid gap-[1px] bg-border border-y border-border sm:grid-cols-2 lg:grid-cols-4">
           {items.map((item, i) => (
-            <Reveal key={item.label} delay={i * 0.07}>
-              <div className="flex flex-col items-center py-6 px-4 text-center">
-                <p
-                  className="text-2xl font-bold text-saffron md:text-3xl"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  {item.value}
-                </p>
-                <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {item.label}
-                </p>
-              </div>
-            </Reveal>
+            <div key={item.label} className="bg-warm-grey">
+              <Reveal delay={i * 0.07}>
+                <div className="flex flex-col items-center py-6 px-4 text-center transition-colors hover:bg-white/50">
+                  <p
+                    className="text-2xl font-bold text-saffron md:text-3xl"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    {item.value}
+                  </p>
+                  <p className="mt-1 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {item.label}
+                  </p>
+                </div>
+              </Reveal>
+            </div>
           ))}
         </div>
       </div>
