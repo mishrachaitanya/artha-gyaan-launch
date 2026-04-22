@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { supabase } from "../lib/supabase";
 
 function loadRazorpay() {
@@ -20,13 +21,40 @@ export function EnrollmentModal({ open, onOpenChange }: { open: boolean; onOpenC
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [workshops, setWorkshops] = useState<any[]>([]);
+  const [fetchingWorkshops, setFetchingWorkshops] = useState(false);
+
   const [formData, setFormData] = useState({
+    workshop_id: "",
     parent_name: "",
     parent_email: "",
     parent_phone: "",
     student_name: "",
     student_age: "",
   });
+
+  useEffect(() => {
+    if (open) {
+      const fetchWorkshops = async () => {
+        setFetchingWorkshops(true);
+        const { data, error } = await supabase
+          .from("workshops")
+          .select("*")
+          .eq("status", "UPCOMING")
+          .order("date", { ascending: true });
+        
+        if (!error && data) {
+          setWorkshops(data);
+          if (data.length > 0 && !formData.workshop_id) {
+            setFormData(prev => ({ ...prev, workshop_id: data[0].id }));
+          }
+        }
+        setFetchingWorkshops(false);
+      };
+      
+      fetchWorkshops();
+    }
+  }, [open]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -48,18 +76,24 @@ export function EnrollmentModal({ open, onOpenChange }: { open: boolean; onOpenC
       // 1. Call Supabase edge function to create order
       const { data: orderData, error: orderError } = await supabase.functions.invoke("create-order", {
         body: {
-          amount: 99900, // ₹999
-          ...formData,
+          workshop_id: formData.workshop_id,
+          parent_name: formData.parent_name,
+          parent_email: formData.parent_email,
+          parent_phone: formData.parent_phone,
+          student_name: formData.student_name,
           student_age: parseInt(formData.student_age),
         },
       });
 
       if (orderError || !orderData) throw new Error(orderError?.message || "Failed to create order");
 
+      const selectedWorkshop = workshops.find(w => w.id === formData.workshop_id);
+      const amount = selectedWorkshop?.price_paise || 99900;
+
       // 2. Open Razorpay Checkout
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
-        amount: 99900,
+        amount: amount,
         currency: "INR",
         name: "Artha Gyaan",
         description: "Financial Literacy Workshop Enrollment",
@@ -146,6 +180,25 @@ export function EnrollmentModal({ open, onOpenChange }: { open: boolean; onOpenC
 
         <form onSubmit={handlePayment} className="flex flex-col gap-4 mt-2">
           <div className="space-y-2">
+            <Label htmlFor="workshop_id">Select Workshop <span className="text-red-500">*</span></Label>
+            <Select 
+              disabled={fetchingWorkshops || workshops.length === 0} 
+              value={formData.workshop_id} 
+              onValueChange={(val) => setFormData({ ...formData, workshop_id: val })}
+            >
+              <SelectTrigger id="workshop_id" className="w-full">
+                <SelectValue placeholder={fetchingWorkshops ? "Loading workshops..." : "Select a venue and date"} />
+              </SelectTrigger>
+              <SelectContent>
+                {workshops.map(w => (
+                  <SelectItem key={w.id} value={w.id}>
+                    {w.title} - {new Date(w.date).toLocaleDateString()} (₹{w.price_paise / 100})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="parent_name">Parent Name <span className="text-red-500">*</span></Label>
             <Input id="parent_name" required value={formData.parent_name} onChange={handleChange} />
           </div>
@@ -169,8 +222,8 @@ export function EnrollmentModal({ open, onOpenChange }: { open: boolean; onOpenC
               <Input id="student_age" type="number" min="10" max="25" required value={formData.student_age} onChange={handleChange} />
             </div>
           </div>
-          <Button type="submit" disabled={loading} className="w-full mt-4 bg-saffron hover:bg-saffron/90 text-navy font-bold text-base h-12">
-            {loading ? "Processing..." : "Pay ₹999 via Razorpay"}
+          <Button type="submit" disabled={loading || !formData.workshop_id} className="w-full mt-4 bg-saffron hover:bg-saffron/90 text-navy font-bold text-base h-12">
+            {loading ? "Processing..." : `Pay ₹${workshops.find(w => w.id === formData.workshop_id)?.price_paise / 100 || 999} via Razorpay`}
           </Button>
         </form>
       </DialogContent>

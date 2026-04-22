@@ -1,4 +1,3 @@
-import "jsr:@supabase/functions-js/edge-runtime.client-helpers";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Razorpay from "npm:razorpay@2.9.2";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -15,7 +14,33 @@ serve(async (req) => {
   }
 
   try {
-    const { amount, parent_name, parent_email, parent_phone, student_name, student_age } = await req.json();
+    const { workshop_id, parent_name, parent_email, parent_phone, student_name, student_age } = await req.json();
+    
+    // Move supabaseClient initialization up to validate workshop
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    if (!workshop_id) {
+      throw new Error("workshop_id is required");
+    }
+
+    const { data: workshopData, error: workshopError } = await supabaseClient
+      .from("workshops")
+      .select("price_paise, status")
+      .eq("id", workshop_id)
+      .single();
+
+    if (workshopError || !workshopData) {
+      throw new Error("Workshop not found.");
+    }
+
+    if (workshopData.status === "SOLD_OUT") {
+      throw new Error("This workshop is currently sold out.");
+    }
+
+    const amount = workshopData.price_paise;
 
     // 1. Initialize Razorpay
     const key_id = Deno.env.get("RAZORPAY_KEY_ID");
@@ -40,14 +65,10 @@ serve(async (req) => {
     const order = await razorpay.orders.create(orderOptions);
 
     // 3. Save to Supabase (Pending Status)
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
-
     const { data, error } = await supabaseClient
       .from("registrations")
       .insert({
+        workshop_id,
         amount: amount,
         parent_name,
         parent_email,

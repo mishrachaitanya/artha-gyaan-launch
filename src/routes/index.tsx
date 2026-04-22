@@ -30,6 +30,7 @@ import { ArthaNav } from "@/components/ArthaNav";
 import { Reveal } from "@/components/Reveal";
 import { Counter } from "@/components/Counter";
 import { EnrollmentModal } from "@/components/EnrollmentModal";
+import { supabase } from "@/lib/supabase";
 import heroImg from "@/assets/hero-parent-student.jpg";
 import classroomImg from "@/assets/classroom.jpg";
 import parent1 from "@/assets/parent-1.jpg";
@@ -1234,6 +1235,48 @@ function ContactFormModal({ type, onClose }: { type: FormType; onClose: () => vo
   const inputCls =
     "w-full rounded-xl border-2 border-border bg-background p-3.5 font-sans text-sm text-navy placeholder:text-muted-foreground focus:border-saffron focus:outline-none transition-colors duration-200";
 
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: ""
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const { error } = await supabase.from('leads').insert({
+      type,
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      message: config.hasMessage ? formData.message : null
+    });
+
+    if (error) {
+      alert("Something went wrong. Please try again.");
+      setLoading(false);
+      return;
+    }
+
+    if (type === "curriculum") {
+      const { data } = supabase.storage.from("assets").getPublicUrl("curriculum.pdf");
+      const a = document.createElement("a");
+      a.href = data.publicUrl;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    setSubmitted(true);
+    setLoading(false);
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-navy/80 p-4 backdrop-blur-sm">
       <div className="relative w-full max-w-md overflow-hidden rounded-3xl border-2 border-navy bg-white shadow-elevated max-h-[90vh] overflow-y-auto">
@@ -1255,53 +1298,96 @@ function ContactFormModal({ type, onClose }: { type: FormType; onClose: () => vo
         </div>
 
         <div className="p-6 md:p-8">
-          <p className="font-sans text-sm leading-relaxed text-muted-foreground">{config.desc}</p>
-          <form
-            className="mt-6 space-y-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              onClose();
-              alert(config.successMsg);
-            }}
-          >
-            {[
-              { label: config.nameLabel, type: "text", placeholder: "Ravi Kumar" },
-              { label: "Email Address", type: "email", placeholder: "ravi@example.com" },
-              { label: "Phone Number", type: "tel", placeholder: "+91 98765 43210" },
-            ].map((field) => (
-              <div key={field.label}>
-                <label className="mb-2 block font-sans text-xs font-bold uppercase tracking-widest text-navy">
-                  {field.label}
-                </label>
-                <input
-                  required
-                  type={field.type}
-                  className={inputCls}
-                  placeholder={field.placeholder}
-                />
+          {submitted ? (
+            <div className="py-8 text-center">
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-saffron/10 text-saffron">
+                <CheckCircle2 className="h-10 w-10" />
               </div>
-            ))}
-            {config.hasMessage && (
-              <div>
-                <label className="mb-2 block font-sans text-xs font-bold uppercase tracking-widest text-navy">
-                  Message (Optional)
-                </label>
-                <textarea
-                  className={`${inputCls} min-h-[100px] resize-none`}
-                  placeholder="Tell us more about your interest..."
-                />
-              </div>
-            )}
-            <button
-              type="submit"
-              className="group relative mt-6 inline-flex w-full items-center justify-center font-sans font-bold uppercase tracking-widest"
-            >
-              <span className="absolute inset-0 border border-navy bg-navy transition-transform duration-300 group-hover:translate-x-1.5 group-hover:translate-y-1.5" />
-              <span className="relative w-full border-2 border-navy bg-saffron px-6 py-4 text-navy transition-transform duration-300 group-hover:-translate-x-1 group-hover:-translate-y-1">
-                {config.btn}
-              </span>
-            </button>
-          </form>
+              <h4 className="mb-3 font-display text-2xl font-bold text-navy">
+                {type === "curriculum" ? "Curriculum Found!" : "Request Received!"}
+              </h4>
+              <p className="mb-8 font-sans text-muted-foreground leading-relaxed">
+                {config.successMsg}
+              </p>
+              <button
+                onClick={onClose}
+                className="group relative inline-flex w-full items-center justify-center font-sans font-bold uppercase tracking-widest"
+              >
+                <span className="absolute inset-0 border border-navy bg-navy transition-transform duration-300 group-hover:translate-x-1.5 group-hover:translate-y-1.5" />
+                <span className="relative w-full border-2 border-navy bg-white px-6 py-4 text-navy transition-transform duration-300 group-hover:-translate-x-1 group-hover:-translate-y-1">
+                  Close
+                </span>
+              </button>
+            </div>
+          ) : (
+            <>
+              <p className="font-sans text-sm leading-relaxed text-muted-foreground">{config.desc}</p>
+              <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+                <div>
+                  <label className="mb-2 block font-sans text-xs font-bold uppercase tracking-widest text-navy">
+                    {config.nameLabel} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    className={inputCls}
+                    placeholder="Ravi Kumar"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block font-sans text-xs font-bold uppercase tracking-widest text-navy">
+                    Email Address <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    required
+                    type="email"
+                    className={inputCls}
+                    placeholder="ravi@example.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block font-sans text-xs font-bold uppercase tracking-widest text-navy">
+                    Phone Number <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    required
+                    type="tel"
+                    className={inputCls}
+                    placeholder="+91 98765 43210"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  />
+                </div>
+                {config.hasMessage && (
+                  <div>
+                    <label className="mb-2 block font-sans text-xs font-bold uppercase tracking-widest text-navy">
+                      Message (Optional)
+                    </label>
+                    <textarea
+                      className={`${inputCls} min-h-[100px] resize-none`}
+                      placeholder="Tell us more about your interest..."
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    />
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="group relative mt-6 inline-flex w-full items-center justify-center font-sans font-bold uppercase tracking-widest disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  <span className="absolute inset-0 border border-navy bg-navy transition-transform duration-300 group-hover:translate-x-1.5 group-hover:translate-y-1.5" />
+                  <span className="relative w-full border-2 border-navy bg-saffron px-6 py-4 text-navy transition-transform duration-300 group-hover:-translate-x-1 group-hover:-translate-y-1">
+                    {loading ? "Processing..." : config.btn}
+                  </span>
+                </button>
+              </form>
+            </>
+          )}
         </div>
       </div>
     </div>
